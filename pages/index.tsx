@@ -12,6 +12,7 @@ const NAMES = ["Rello", "Focult", "Tab Zero", "Sillico"];
 const Home: NextPage = () => {
   const { addToast } = useToasts();
   const [selected, setSelected] = useState<number | null>(null);
+  const [loading, setLoading] = useState(false);
 
   useEffect(() => {
     const picked = localStorage.getItem("picked");
@@ -20,21 +21,25 @@ const Home: NextPage = () => {
   }, []);
 
   const handleSelect = async (index: number) => {
+    if (loading) return;
     if (localStorage.getItem("picked")) return;
 
     const list = ["rello", "focult", "tabZero", "silico"];
 
     try {
+      setLoading(true);
       const docRef = doc(db, "internship-poll-responses", "doc");
       await updateDoc(docRef, {
         [list[index]]: increment(1),
       });
       setSelected(index);
+      setLoading(false);
       addToast(`You picked ${NAMES[index]}`, { appearance: "success" });
       localStorage.setItem("picked", JSON.stringify(index));
     } catch (err) {
       console.log(err);
       setSelected(null);
+      setLoading(false);
       addToast(`Something went wrong`, { appearance: "error" });
     }
   };
